@@ -8,8 +8,8 @@ from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
 
 # Core modules
-from sully_engine.identity import SullyIdentity
-from sully_engine.codex import SullyCodex
+from sully_engine.kernel_modules.identity import SullyIdentity
+from sully_engine.kernel_modules.codex import SullyCodex
 from sully_engine.reasoning import SymbolicReasoningNode
 from sully_engine.memory import SullySearchMemory
 
@@ -19,8 +19,9 @@ from sully_engine.kernel_modules.dream import DreamCore
 from sully_engine.kernel_modules.math_translator import SymbolicMathTranslator
 from sully_engine.kernel_modules.fusion import SymbolFusionEngine
 from sully_engine.kernel_modules.paradox import ParadoxLibrary
-from sully_engine.kernel_modules.ocr_engine import SullyOCREngine
-from sully_engine.kernel_modules.ingest_books import BookIngestor
+
+# Import consolidated PDF reader directly
+from sully_engine.pdf_reader import PDFReader
 
 MEMORY_PATH = "sully_ingested.json"
 
@@ -52,9 +53,8 @@ class Sully:
             memory=self.memory
         )
         
-        # Perception systems
-        self.ocr = SullyOCREngine()
-        self.book_ingestor = BookIngestor(ocr_enabled=True)
+        # PDF reader for direct document processing
+        self.pdf_reader = PDFReader(ocr_enabled=True, dpi=300)
         
         # Experiential knowledge - unlimited and ever-growing
         self.knowledge = []
@@ -173,13 +173,46 @@ class Sully:
         self.knowledge.append(message)
         return f"📘 Integrated: '{message}'"
 
-    def ingest_and_store_text(self, file_path):
+    def ingest_document(self, file_path):
         """
         Absorb and synthesize content from various document formats.
         This is how Sully expands her knowledge from structured sources.
         """
         try:
-            content = self.book_ingestor.ingest(file_path)
+            if not os.path.exists(file_path):
+                return f"❌ File not found: '{file_path}'"
+                
+            ext = os.path.splitext(file_path)[1].lower()
+            content = ""
+            
+            # Extract content based on file type
+            if ext == ".pdf":
+                # Use PDFReader for PDF files
+                result = self.pdf_reader.extract_text(file_path, verbose=True)
+                if result["success"]:
+                    content = result["text"]
+                else:
+                    return f"[Extraction Failed: {result.get('error', 'Unknown error')}]"
+            elif ext in [".txt", ".md"]:
+                # Simple text file reading
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        content = f.read()
+                except Exception as e:
+                    return f"[Text Extraction Error: {str(e)}]"
+            elif ext == ".docx":
+                # Handle Word documents
+                try:
+                    import docx
+                    doc = docx.Document(file_path)
+                    content = "\n".join(p.text for p in doc.paragraphs)
+                except ImportError:
+                    return "[Missing `python-docx`. Install it with `pip install python-docx`]"
+                except Exception as e:
+                    return f"[DOCX Error: {str(e)}]"
+            else:
+                return f"[Unsupported file type: {ext}]"
+            
             if content:
                 self.knowledge.append(content)
                 self.save_to_disk(file_path, content)
@@ -191,6 +224,7 @@ class Sully:
                 )
                 
                 return f"[Knowledge Synthesized: {file_path}]\n{brief_synthesis}"
+            
             return "[No Content Extracted]"
         except Exception as e:
             return f"[Ingestion Process Incomplete: {str(e)}]"
@@ -217,10 +251,10 @@ class Sully:
             # Knowledge is not lost; it remains in memory
             print(f"Note: Memory persistence encountered an issue: {str(e)}")
 
-    def load_books_from_folder(self, folder_path="sullybooks"):
+    def load_documents_from_folder(self, folder_path="sully_documents"):
         """
         Discover and absorb knowledge from a collection of documents.
-        Sully can learn from various document formats simultaneously.
+        Processes various document formats simultaneously.
         """
         if not os.path.exists(folder_path):
             return f"❌ Knowledge source '{folder_path}' not found."
@@ -235,7 +269,7 @@ class Sully:
                 file_lower = file.lower()
                 if any(file_lower.endswith(fmt) for fmt in supported_formats):
                     full_path = os.path.join(folder_path, file)
-                    result = self.ingest_and_store_text(full_path)
+                    result = self.ingest_document(full_path)
                     results.append(result)
                     
                     # Extract the synthesis portion if available
@@ -254,6 +288,41 @@ class Sully:
             return results
         except Exception as e:
             return [f"Knowledge exploration encountered complexity: {str(e)}"]
+            
+    def extract_images_from_pdf(self, pdf_path, output_dir="extracted_images"):
+        """
+        Extract images from a PDF document.
+        
+        Args:
+            pdf_path: Path to the PDF file
+            output_dir: Directory to save extracted images
+            
+        Returns:
+            Summary of extraction results
+        """
+        if not os.path.exists(pdf_path):
+            return f"❌ PDF file not found: '{pdf_path}'"
+            
+        # Create output directory if it doesn't exist
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            
+        # Use PDFReader's image extraction functionality
+        images_info = self.pdf_reader.extract_images(pdf_path, output_dir)
+        
+        if not images_info:
+            return "No images were found or extracted from the PDF."
+            
+        # Generate a summary
+        summary = f"Extracted {len(images_info)} images from {pdf_path}:\n"
+        for i, img in enumerate(images_info[:5]):  # Show details for first 5 images
+            summary += f"- Image {i+1}: Page {img['page']}, {img['width']}x{img['height']} ({img['format']})\n"
+            
+        if len(images_info) > 5:
+            summary += f"- ...and {len(images_info) - 5} more images\n"
+            
+        summary += f"\nAll images saved to: {output_dir}"
+        return summary
             
     def word_count(self):
         """Return the number of concepts in Sully's lexicon."""
