@@ -1,20 +1,24 @@
-def _check_value_pluralism(self, claim: str) -> Dict[str, Any]:
-        """Ethical check: Evaluates recognition of multiple value perspectives."""
-        # Check for pluralistic language
-        pluralism_markers = ["different perspectives", "various values", "multiple viewpoints", "diversity of", "depends on context"]
-        has_pluralism_markers = any(marker in claim.lower() for marker in pluralism_markers)
-        
-        if has_pluralism_markers:
-            return {"check": "value_pluralism", "score": 0.9, "reason": "Explicitly acknowledges value pluralism."}
+from typing import Dict, List, Any, Optional, Union
+
+class JudgmentProtocol:
+
+    def _check_value_pluralism(self, claim: str) -> Dict[str, Any]:
+            """Ethical check: Evaluates recognition of multiple value perspectives."""
+            # Check for pluralistic language
+            pluralism_markers = ["different perspectives", "various values", "multiple viewpoints", "diversity of", "depends on context"]
+            has_pluralism_markers = any(marker in claim.lower() for marker in pluralism_markers)
             
-        # Check for universalist language
-        universalist_markers = ["universal", "absolute", "for all", "objective", "regardless of"]
-        has_universalist_markers = any(marker in claim.lower() for marker in universalist_markers)
-        
-        if has_universalist_markers:
-            return {"check": "value_pluralism", "score": 0.3, "reason": "Indicates universalist value framework."}
+            if has_pluralism_markers:
+                return {"check": "value_pluralism", "score": 0.9, "reason": "Explicitly acknowledges value pluralism."}
+                
+            # Check for universalist language
+            universalist_markers = ["universal", "absolute", "for all", "objective", "regardless of"]
+            has_universalist_markers = any(marker in claim.lower() for marker in universalist_markers)
             
-        return {"check": "value_pluralism", "score": 0.6, "reason": "Neutral on value pluralism."}
+            if has_universalist_markers:
+                return {"check": "value_pluralism", "score": 0.3, "reason": "Indicates universalist value framework."}
+                
+            return {"check": "value_pluralism", "score": 0.6, "reason": "Neutral on value pluralism."}
 
     def _check_justice_considerations(self, claim: str) -> Dict[str, Any]:
         """Ethical check: Evaluates consideration of justice and fairness."""
@@ -181,41 +185,41 @@ def _check_value_pluralism(self, claim: str) -> Dict[str, Any]:
         return {"check": "scalability", "score": 0.5, "reason": "Unclear scalability."}
 
 
-if __name__ == "__main__":
-    # Example usage when run directly
-    judgment = JudgmentProtocol()
+# if __name__ == "__main__":
+# # Example usage when run directly
+#     judgment = JudgmentProtocol()
+
+# # Test with various claims
+# test_claims = [
+#     "All knowledge is ultimately subjective, as it is filtered through human perception.",
+#     "The universe is deterministic, with every event following necessarily from prior causes.",
+#     "Democracy is the best form of government because it respects individual autonomy.",
+#     "Beauty exists objectively in the harmony and proportion of forms.",
+#     "The most practical approach to climate change involves technological innovation and market incentives."
+# ]
+
+# print("=== Basic Judgment Examples ===")
+# for claim in test_claims:
+#     result = judgment.evaluate(claim, detailed_output=False)
+#     print(f"\nClaim: {claim}")
+#     print(f"Judgment: {result}")
     
-    # Test with various claims
-    test_claims = [
-        "All knowledge is ultimately subjective, as it is filtered through human perception.",
-        "The universe is deterministic, with every event following necessarily from prior causes.",
-        "Democracy is the best form of government because it respects individual autonomy.",
-        "Beauty exists objectively in the harmony and proportion of forms.",
-        "The most practical approach to climate change involves technological innovation and market incentives."
-    ]
-    
-    print("=== Basic Judgment Examples ===")
-    for claim in test_claims:
-        result = judgment.evaluate(claim, detailed_output=False)
-        print(f"\nClaim: {claim}")
-        print(f"Judgment: {result}")
+# # Test different cognitive frameworks
+# print("\n=== Cognitive Framework Examples ===")
+# frameworks = list(judgment.cognitive_frameworks.keys())
+# for i, framework in enumerate(frameworks):
+#     if i < len(test_claims):
+#         result = judgment.evaluate(test_claims[i], framework=framework, detailed_output=False)
+#         print(f"\nClaim evaluated with {framework} framework:")
+#         print(f"Claim: {test_claims[i]}")
+#         print(f"Judgment: {result}")
         
-    # Test different cognitive frameworks
-    print("\n=== Cognitive Framework Examples ===")
-    frameworks = list(judgment.cognitive_frameworks.keys())
-    for i, framework in enumerate(frameworks):
-        if i < len(test_claims):
-            result = judgment.evaluate(test_claims[i], framework=framework, detailed_output=False)
-            print(f"\nClaim evaluated with {framework} framework:")
-            print(f"Claim: {test_claims[i]}")
-            print(f"Judgment: {result}")
-            
-    # Test multi-perspective evaluation
-    print("\n=== Multi-Perspective Evaluation ===")
-    multi_result = judgment.multi_perspective_evaluation(test_claims[0])
-    print(f"Claim: {test_claims[0]}")
-    print(f"Consensus Level: {multi_result['consensus_level']} ({multi_result['consensus_score']:.2f})")
-    print(f"Average Score: {multi_result['average_score']:.2f}")
-    print("Framework Verdicts:")
-    for framework, eval_info in multi_result["framework_evaluations"].items():
-        print(f"  - {framework}: {eval_info['verdict']} ({eval_info['score']:.2f})")
+# # Test multi-perspective evaluation
+# print("\n=== Multi-Perspective Evaluation ===")
+# multi_result = judgment.multi_perspective_evaluation(test_claims[0])
+# print(f"Claim: {test_claims[0]}")
+# print(f"Consensus Level: {multi_result['consensus_level']} ({multi_result['consensus_score']:.2f})")
+# print(f"Average Score: {multi_result['average_score']:.2f}")
+# print("Framework Verdicts:")
+# for framework, eval_info in multi_result["framework_evaluations"].items():
+#     print(f"  - {framework}: {eval_info['verdict']} ({eval_info['score']:.2f})")

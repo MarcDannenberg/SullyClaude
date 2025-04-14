@@ -8,20 +8,20 @@ from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
 
 # Core modules
-from sully_engine.kernel_modules.identity import SullyIdentity
-from sully_engine.kernel_modules.codex import SullyCodex
-from sully_engine.reasoning import SymbolicReasoningNode
-from sully_engine.memory import SullySearchMemory
+from identity import SullyIdentity
+from Codex import SullyCodex
+from reasoning import SymbolicReasoningNode
+from memory import SullySearchMemory
 
 # Kernel Modules
-from sully_engine.kernel_modules.judgment import JudgmentProtocol
-from sully_engine.kernel_modules.dream import DreamCore
-from sully_engine.kernel_modules.math_translator import SymbolicMathTranslator
-from sully_engine.kernel_modules.fusion import SymbolFusionEngine
-from sully_engine.kernel_modules.paradox import ParadoxLibrary
+from judgement import JudgmentProtocol
+from dream import DreamCore
+from math_translator import SymbolicMathTranslator
+from fusion import SymbolFusionEngine
+from paradox import ParadoxLibrary
 
 # Import consolidated PDF reader directly
-from sully_engine.pdf_reader import PDFReader
+from pdf_reader import PDFReader
 
 MEMORY_PATH = "sully_ingested.json"
 
@@ -42,7 +42,7 @@ class Sully:
         # Specialized cognitive modules
         self.translator = SymbolicMathTranslator()
         self.judgment = JudgmentProtocol()
-        self.dream = DreamCore()
+        self.dream_core = DreamCore()
         self.paradox = ParadoxLibrary()
         self.fusion = SymbolFusionEngine()
         
@@ -87,7 +87,7 @@ class Sully:
         Dreams represent non-linear cognitive exploration.
         """
         try:
-            return self.dream.generate(seed)
+            return self.dream_core.generate(seed)
         except Exception:
             # If dream generation isn't available, synthesize a creative response
             return self.reasoning_node.reason(
